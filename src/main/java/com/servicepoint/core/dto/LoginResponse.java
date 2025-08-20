@@ -14,4 +14,5 @@ public class LoginResponse {
     private String refreshToken;
     private Long accessTokenExpiresIn;
     private Long refreshTokenExpiresIn;
+    UserInfo user;
 }

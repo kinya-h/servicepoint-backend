@@ -1,5 +1,7 @@
 package com.servicepoint.core.dto;
 
-public class UserInfo {
-
-}
+public record UserInfo (
+        Integer userId,
+        String username,
+        String email
+) {}

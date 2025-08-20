@@ -1,9 +1,6 @@
 package com.servicepoint.core.service;
 
-import com.servicepoint.core.dto.LoginRequest;
-import com.servicepoint.core.dto.LoginResponse;
-import com.servicepoint.core.dto.RegisterRequest;
-import com.servicepoint.core.dto.UserResponse;
+import com.servicepoint.core.dto.*;
 import com.servicepoint.core.exception.ResourceNotFoundException;
 import com.servicepoint.core.model.Session;
 import com.servicepoint.core.model.User;
@@ -95,7 +92,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         sessionRepository.save(session);
 
         // Return login response with tokens
-        return new LoginResponse(accessToken, refreshToken, 900000L, 604800000L); // 15m, 7d
+        return new LoginResponse(accessToken, refreshToken, 900000L, 604800000L ,
+                new UserInfo(user.getUserId(),user.getUsername(), user.getEmail())); // 15m, 7d
     }
 
     @Override
