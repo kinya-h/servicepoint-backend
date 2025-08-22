@@ -1,7 +1,6 @@
 package com.servicepoint.core.controller;
 
 import com.servicepoint.core.dto.*;
-import com.servicepoint.core.model.Booking;
 import com.servicepoint.core.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +9,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -20,7 +18,7 @@ public class BookingController {
     private BookingService bookingService;
 
     @GetMapping
-    public ResponseEntity<List<BookingResponse>> getAllBookings(
+    public ResponseEntity<List<BookingInfo>> getAllBookings(
             @RequestParam(required = false) Integer customer_id,
             @RequestParam(required = false) Integer provider_id) {
 
@@ -39,7 +37,7 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public ResponseEntity<BookingResponse> getBookingById(@PathVariable Integer bookingId) {
+    public ResponseEntity<BookingInfo> getBookingById(@PathVariable Integer bookingId) {
          return ResponseEntity.ok(bookingService.findBookingById(bookingId));
     }
 

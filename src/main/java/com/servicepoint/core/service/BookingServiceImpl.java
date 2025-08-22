@@ -12,7 +12,6 @@ import com.servicepoint.core.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Book;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,10 +25,10 @@ public class BookingServiceImpl implements BookingService {
     @Autowired
     private ServiceCatalogRepository serviceCatalogRepository;
     @Override
-    public List<BookingResponse> findAllBookings() {
+    public List<BookingInfo> findAllBookings() {
         var bookings =  bookingRepository.findAll();
 
-        return bookings.stream().map(booking -> new BookingResponse(
+        return bookings.stream().map(booking -> new BookingInfo(
                 booking.getBookingId(),
                 booking.getBookingDate(),
                 booking.getServiceDateTime(),
@@ -62,11 +61,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingResponse findBookingById(Integer bookingId) {
+    public BookingInfo findBookingById(Integer bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
-        return new BookingResponse(
+        return new BookingInfo(
                 booking.getBookingId(),
                 booking.getBookingDate(),
                 booking.getServiceDateTime(),
@@ -159,11 +158,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponse> findBookingsByCustomerId(Integer customerId) {
+    public List<BookingInfo> findBookingsByCustomerId(Integer customerId) {
         var bookings =  bookingRepository.findByCustomerUserId(customerId);
 
 
-        return bookings.stream().map(booking -> new BookingResponse(
+        return bookings.stream().map(booking -> new BookingInfo(
                 booking.getBookingId(),
                 booking.getBookingDate(),
                 booking.getServiceDateTime(),
@@ -197,9 +196,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponse> findBookingsByProviderId(Integer providerId) {
+    public List<BookingInfo> findBookingsByProviderId(Integer providerId) {
         var bookings =  bookingRepository.findByProviderUserId(providerId);
-        return bookings.stream().map(booking -> new BookingResponse(
+        return bookings.stream().map(booking -> new BookingInfo(
                 booking.getBookingId(),
                 booking.getBookingDate(),
                 booking.getServiceDateTime(),
