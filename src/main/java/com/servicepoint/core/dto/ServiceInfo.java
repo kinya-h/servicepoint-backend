@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceInfo {
-    private Integer serviceId;
+    private Integer serviceId; // TODO:: change later to id to maintain consistency
     private String pricingType;
     private String description;
     private String availability;

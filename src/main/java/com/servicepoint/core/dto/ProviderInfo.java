@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProviderInfo {
 
-    private Integer userId;
+    private Integer id;
     private String username;
     private String email;
     private String role;
@@ -21,7 +21,7 @@ public class ProviderInfo {
 
 
     public ProviderInfo(Integer userId, String username, String email, String role) {
-        this.userId = userId;
+        this.id = userId;
         this.username = username;
         this.email = email;
         this.role = role;

@@ -53,11 +53,11 @@ public class ServiceController {
         return ResponseEntity.created(location).body(createdService);
     }
     @PutMapping("/{serviceId}")
-    public ResponseEntity<ServiceCatalog> updateService(
+    public ResponseEntity<ServiceCatalogResponse> updateService(
             @PathVariable Integer serviceId,
             @RequestBody UpdateServiceRequest request) {
-        ServiceCatalog updated = serviceCatalogService.updateService(serviceId, request);
-        return ResponseEntity.ok(updated);
+        ServiceCatalogResponse updatedService = serviceCatalogService.updateService(serviceId, request);
+        return ResponseEntity.ok(updatedService);
     }
 
 

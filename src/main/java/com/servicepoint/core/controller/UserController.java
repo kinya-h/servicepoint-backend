@@ -1,5 +1,6 @@
 package com.servicepoint.core.controller;
 
+import com.servicepoint.core.dto.UserInfo;
 import com.servicepoint.core.dto.UserResponse;
 import com.servicepoint.core.model.User;
 import com.servicepoint.core.service.UserService;
@@ -62,21 +63,37 @@ public class UserController {
 
     @PutMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN') or authentication.name == @userService.findUserById(#userId).orElse(new com.servicepoint.core.model.User()).email")
-    public ResponseEntity<?> updateUser(@PathVariable Integer userId, @RequestBody User user) {
+    public ResponseEntity<?> updateUser(@PathVariable Integer userId, @RequestBody UserInfo userInfo) {
         try {
-            Optional<User> existingUser = userService.findUserById(userId);
-            if (existingUser.isEmpty()) {
+            Optional<User> existingUserOpt = userService.findUserById(userId);
+            if (existingUserOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
 
-            user.setUserId(userId);
-            User updatedUser = userService.saveUser(user);
+            User existingUser = getExistingUser(userInfo, existingUserOpt);
+
+            // Save updated user
+            User updatedUser = userService.saveUser(existingUser);
+
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(new AuthController.ErrorResponse("User update failed", e.getMessage()));
         }
     }
+
+    private static User getExistingUser(UserInfo userInfo, Optional<User> existingUserOpt) {
+        User existingUser = existingUserOpt.get();
+
+        // Merge incoming DTO fields into existing entity
+        if (userInfo.getUsername() != null) existingUser.setUsername(userInfo.getUsername());
+        if (userInfo.getEmail() != null) existingUser.setEmail(userInfo.getEmail());
+        if (userInfo.getRole() != null) existingUser.setRole(userInfo.getRole());
+        if (userInfo.getPhoneNumber() != null) existingUser.setPhoneNumber(userInfo.getPhoneNumber());
+        if (userInfo.getProfilePicture() != null) existingUser.setProfilePicture(userInfo.getProfilePicture());
+        return existingUser;
+    }
+
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")

@@ -14,5 +14,5 @@ public interface ServiceCatalogService {
     ServiceCatalogResponse saveService(NewServiceRequest service);
     void deleteService(Integer serviceId);
     List<ServiceCatalog> findServicesByProviderId(Integer providerId);
-    ServiceCatalog updateService(Integer serviceId, UpdateServiceRequest request);
+    ServiceCatalogResponse updateService(Integer serviceId, UpdateServiceRequest request);
 }

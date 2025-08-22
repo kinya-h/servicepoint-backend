@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         // Return login response with tokens
         return new LoginResponse(accessToken, refreshToken, 900000L, 604800000L ,
-                new UserInfo(user.getUserId(),user.getUsername(), user.getEmail())); // 15m, 7d
+                new UserInfo(user.getUserId(),user.getUsername(), user.getEmail(), user.getRole(), user.getPhoneNumber(), user.getProfilePicture())); // 15m, 7d
     }
 
     @Override

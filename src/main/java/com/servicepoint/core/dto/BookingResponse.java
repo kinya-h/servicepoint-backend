@@ -3,7 +3,7 @@ package com.servicepoint.core.dto;
 import java.sql.Timestamp;
 
 public record BookingResponse(
-        Integer bookingId,
+        Integer id,
         Timestamp bookingDate,
         Timestamp serviceDateTime,
         String status,
@@ -12,6 +12,6 @@ public record BookingResponse(
         String pricingTypeAtBooking,
         CustomerInfo customer,
         ProviderInfo provider,
-        ServiceInfo serviceInfo
+        ServiceInfo service
 
 ) {}

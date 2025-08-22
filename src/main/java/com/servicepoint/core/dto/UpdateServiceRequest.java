@@ -10,6 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateServiceRequest {
+//    private String serviceId; // No need to include the id since it will be passed via url parameter.
     private String name;
     private String description;
     private Double price;

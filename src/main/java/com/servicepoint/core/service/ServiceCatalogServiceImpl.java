@@ -6,6 +6,7 @@ import com.servicepoint.core.model.ServiceCatalog;
 import com.servicepoint.core.model.User;
 import com.servicepoint.core.repository.ServiceCatalogRepository;
 import com.servicepoint.core.repository.UserRepository;
+import jakarta.persistence.Column;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -137,17 +138,39 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService {
     }
 
     @Override
-    public ServiceCatalog updateService(Integer serviceId, UpdateServiceRequest request) {
+    public ServiceCatalogResponse updateService(Integer serviceId, UpdateServiceRequest request) {
         ServiceCatalog existing = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
-        if (request.getName() != null) {
-            existing.setName(request.getName());
-        }
-        if (request.getDescription() != null) {
-            existing.setDescription(request.getDescription());
-        }
-        return serviceRepository.save(existing);
+        if (request.getName() != null) existing.setName(request.getName());
+        if (request.getDescription() != null) existing.setDescription(request.getDescription());
+        if(request.getPricingType() != null) existing.setPricingType(request.getPricingType());
+        if (request.getCategory() != null) existing.setCategory(request.getCategory());
+        if (request.getPrice() != null) existing.setPrice(request.getPrice());
+        if (request.getAvailability() != null) existing.setAvailability(request.getAvailability());
+        if (request.getIcon() != null) existing.setIcon(request.getIcon());
+        if(request.getLevel() != null) existing.setLevel(request.getLevel());
+        if(request.getSubject() != null) existing.setSubject(request.getSubject());
+
+
+        var updatedService =  serviceRepository.save(existing);
+        return new ServiceCatalogResponse(
+
+                updatedService.getServiceId(),
+                updatedService.getName(),
+                updatedService.getDescription(),
+                updatedService.getCategory(),
+                updatedService.getPrice(),
+                updatedService.getPricingType(),
+                updatedService.getAvailability(),
+                updatedService.getLevel(),
+                updatedService.getSubject(),
+                new ProviderInfo(
+                        updatedService.getProvider().getUserId(),
+                        updatedService.getProvider().getUsername(),
+                        updatedService.getProvider().getEmail(),
+                        updatedService.getProvider().getRole()
+                ));
     }
 
 
