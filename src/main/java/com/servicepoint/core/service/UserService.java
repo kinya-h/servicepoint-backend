@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    UserResponse createUser(RegisterRequest request);
+    UserResponse createUser(RegisterRequest request ,   HttpServletRequest httpRequest) throws Exception;
     LoginResponse loginUser(LoginRequest request, HttpServletRequest httpRequest);
     UserResponse getUserById(Integer userId);
     List<User> findAllUsers();

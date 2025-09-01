@@ -22,9 +22,9 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest user, HttpServletRequest request) {
         try {
-            UserResponse userDTO = userService.createUser(request);
+            UserResponse userDTO = userService.createUser( user, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()

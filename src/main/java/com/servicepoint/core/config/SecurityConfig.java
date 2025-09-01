@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -83,6 +84,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/services/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
                         .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
                         .requestMatchers("/api/feedback/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
+                        .requestMatchers("/api/provider/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
 
                         // All other requests require authentication
                         .anyRequest().authenticated()
@@ -98,7 +100,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

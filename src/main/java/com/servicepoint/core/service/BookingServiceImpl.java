@@ -49,11 +49,12 @@ public class BookingServiceImpl implements BookingService {
                 ),
                 new ServiceInfo(
                         booking.getService().getServiceId(),
-                        booking.getService().getPricingType(),
+                        booking.getService().getName(),
                         booking.getService().getDescription(),
+                        booking.getService().getCategory(),
                         booking.getService().getAvailability(),
                         booking.getService().getPrice(),
-                        booking.getService().getCategory(),
+                        booking.getService().getPricingType(),
                         booking.getService().getLevel(),
                         booking.getService().getSubject()
                 )
@@ -85,10 +86,13 @@ public class BookingServiceImpl implements BookingService {
                         booking.getProvider().getRole()
                 ),
                 new ServiceInfo(
-                        booking.getService().getServiceId(), booking.getService().getPricingType(),
+                        booking.getService().getServiceId(), booking.getService().getName(),
                         booking.getService().getDescription(),
-                        booking.getService().getAvailability(), booking.getService().getPrice(),
-                        booking.getService().getCategory(), booking.getService().getLevel(), booking.getService().getSubject()
+                        booking.getService().getCategory(),
+                        booking.getService().getAvailability(),
+                        booking.getService().getPrice(),
+                        booking.getService().getPricingType(),
+                         booking.getService().getLevel(), booking.getService().getSubject()
 
                 )
         );
@@ -144,7 +148,10 @@ public class BookingServiceImpl implements BookingService {
                 booking.getPricingTypeAtBooking(),
                 new CustomerInfo(customer.getUserId(),customer.getUsername(), customer.getEmail()),
                 new ProviderInfo(provider.getUserId(), provider.getUsername(), booking.getProvider().getEmail(), booking.getProvider().getRole()),
-                new ServiceInfo(service.getServiceId(), service.getPricingType(), service.getDescription(), service.getAvailability(), service.getPrice(), service.getCategory(), service.getLevel(), service.getSubject())
+                new ServiceInfo(service.getServiceId(), service.getName(),
+                        service.getDescription(), service.getCategory(),
+                        service.getAvailability(), service.getPrice(), service.getPricingType(),
+                        service.getLevel(), service.getSubject())
         );
     }
 
@@ -183,11 +190,12 @@ public class BookingServiceImpl implements BookingService {
                 ),
                 new ServiceInfo(
                         booking.getService().getServiceId(),
-                        booking.getService().getPricingType(),
+                        booking.getService().getName(),
                         booking.getService().getDescription(),
+                        booking.getService().getCategory(),
                         booking.getService().getAvailability(),
                         booking.getService().getPrice(),
-                        booking.getService().getCategory(),
+                        booking.getService().getPricingType(),
                         booking.getService().getLevel(),
                         booking.getService().getSubject()
                 )
@@ -219,11 +227,12 @@ public class BookingServiceImpl implements BookingService {
                 ),
                 new ServiceInfo(
                         booking.getService().getServiceId(),
-                        booking.getService().getPricingType(),
+                        booking.getService().getName(),
                         booking.getService().getDescription(),
+                        booking.getService().getCategory(),
                         booking.getService().getAvailability(),
                         booking.getService().getPrice(),
-                        booking.getService().getCategory(),
+                        booking.getService().getPricingType(),
                         booking.getService().getLevel(),
                         booking.getService().getSubject()
                 )

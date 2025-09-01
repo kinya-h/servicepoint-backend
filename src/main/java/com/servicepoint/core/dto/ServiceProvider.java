@@ -5,16 +5,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class RegisterRequest {
+
+public class ServiceProvider {
+
+    private Integer id;
     private String username;
     private String email;
-    private String password;
     private String role;
-
-
-
+    ServiceInfo service;
 }

@@ -11,11 +11,13 @@ import com.servicepoint.core.repository.ServiceCatalogRepository;
 import com.servicepoint.core.repository.UserRepository;
 import jakarta.persistence.Column;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Service
 public class FeedbackServieImpl implements FeedbackService{
 
     @Autowired

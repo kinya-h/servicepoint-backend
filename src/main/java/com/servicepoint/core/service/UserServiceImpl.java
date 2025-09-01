@@ -7,6 +7,7 @@ import com.servicepoint.core.model.User;
 import com.servicepoint.core.repository.SessionRepository;
 import com.servicepoint.core.repository.UserRepository;
 import com.servicepoint.core.security.JwtUtil;
+import com.servicepoint.core.util.GeoLocationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,7 +38,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private JwtUtil jwtUtil;
 
     @Override
-    public UserResponse createUser(RegisterRequest request) {
+    public UserResponse createUser(RegisterRequest request, HttpServletRequest httpRequest) throws Exception {
         // Check if user already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("User with this email already exists");
@@ -46,16 +47,28 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             throw new RuntimeException("User with this username already exists");
         }
 
+        // Get client IP
+        String clientIp = getClientIpAddress(httpRequest);
+
+        // Fetch location
+        GeoLocationUtil.LocationResult location = GeoLocationUtil.getLocationFromIp(clientIp);
+
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
+        user.setLatitude(location.getLatitude());
+        user.setLongitude(location.getLongitude());
+
+        // Optionally store location
+        user.setLocation(location.getCity());
         user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
         user.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
+
     }
 
     @Override
@@ -202,4 +215,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userDTO.setUpdatedAt(user.getUpdatedAt().toString());
         return userDTO;
     }
+
+
 }

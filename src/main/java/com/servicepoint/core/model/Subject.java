@@ -25,6 +25,7 @@ public class Subject {
     @Column(nullable = false)
     private String name;
 
+
     private String icon;
 
     @ManyToMany(mappedBy = "subjects")

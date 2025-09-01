@@ -11,11 +11,12 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ServiceInfo {
     private Integer serviceId; // TODO:: change later to id to maintain consistency
-    private String pricingType;
+    private String name;
     private String description;
+    private String category;
     private String availability;
     private Double price;
-    private String category;
+    private String pricingType;
     private String level;
     private String subject;
 }

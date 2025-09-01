@@ -15,7 +15,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "your32charlongsecretkeyhereyour32charlongsecretkeyhere";
+    private final String SECRET_KEY = "MxYMZVfvXiQC19LK2OTicNI8ZxGHQuGc";
 
     private Key getSigningKey() {
         byte[] keyBytes = SECRET_KEY.getBytes();

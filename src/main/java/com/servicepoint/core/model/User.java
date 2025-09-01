@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -14,7 +16,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-
 @Entity
 @Table(name = "users")
 public class User {
@@ -35,36 +36,29 @@ public class User {
     @Column(nullable = false)
     private String role; // customer or provider
 
-    @Column(columnDefinition = "TEXT")
     private String profilePicture;
 
-    @Column(columnDefinition = "TEXT")
     private String location;
 
-    @Column(columnDefinition = "DOUBLE")
     private Double latitude;
 
-    @Column(columnDefinition = "DOUBLE")
     private Double longitude;
 
-    @Column(columnDefinition = "TEXT")
     private String phoneNumber;
 
-    @Column(columnDefinition = "DOUBLE")
     private Double rating;
 
-    @Column(columnDefinition = "INTEGER")
     private Integer reviewCount;
 
-    @Column(columnDefinition = "DOUBLE")
     private Double distanceMiles;
 
     private Timestamp lastLogin;
 
-    @Column(updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @CreationTimestamp
+    @Column(updatable = false)
     private Timestamp createdAt;
 
-    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @UpdateTimestamp
     private Timestamp updatedAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
