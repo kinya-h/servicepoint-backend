@@ -11,8 +11,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LocationSearchRequest {
-    @NotBlank(message = "Subject is required")
-    private String subject;
+    @NotBlank(message = "Service category is required")
+    private String category;
 
     @NotNull(message = "Latitude is required")
     @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
@@ -35,11 +35,4 @@ public class LocationSearchRequest {
     @Min(value = 0, message = "Offset cannot be negative")
     private Integer offset = 0;
 
-    // Optional filters
-    private String category;
-    private String level;
-    private Double priceMin;
-    private Double priceMax;
-    private String pricingType;
-    private Double minRating;
 }

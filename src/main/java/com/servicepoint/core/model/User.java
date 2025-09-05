@@ -50,7 +50,7 @@ public class User {
 
     private Integer reviewCount;
 
-    private Double distanceMiles;
+    // REMOVED: private Double distanceMiles;
 
     private Timestamp lastLogin;
 

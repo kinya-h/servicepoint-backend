@@ -32,42 +32,29 @@ public class ProviderService {
                 .collect(Collectors.toList());
     }
 
-    // Method using LocationSearchRequest DTO
     public List<ProviderWithUser> getProvidersNearbyByService(LocationSearchRequest request) {
-        List<User> providers = userRepository.findProvidersNearbyByServiceWithFilters(
-                request.getSubject(),
+        List<Object[]> results = userRepository.findProvidersNearbyByServiceWithFilters(
+                request.getCategory(),
                 request.getLatitude(),
                 request.getLongitude(),
                 request.getRadius(),
-                request.getCategory(),
-                request.getLevel(),
-                request.getPriceMin(),
-                request.getPriceMax(),
-                request.getPricingType(),
-                request.getMinRating(),
                 request.getLimit(),
                 request.getOffset()
         );
 
-        return providers.stream().map(this::mapToProviderWithUser)
+        return results.stream()
+                .map(this::mapResultToProviderWithUser)
                 .collect(Collectors.toList());
     }
 
-    // Enhanced method returning full response with metadata
     public LocationSearchResponse searchProvidersNearbyByService(LocationSearchRequest request) {
         List<ProviderWithUser> providers = getProvidersNearbyByService(request);
 
         Long totalCount = userRepository.countProvidersNearbyByServiceWithFilters(
-                request.getSubject(),
+                request.getCategory(),
                 request.getLatitude(),
                 request.getLongitude(),
-                request.getRadius(),
-                request.getCategory(),
-                request.getLevel(),
-                request.getPriceMin(),
-                request.getPriceMax(),
-                request.getPricingType(),
-                request.getMinRating()
+                request.getRadius()
         );
 
         return new LocationSearchResponse(
@@ -76,12 +63,11 @@ public class ProviderService {
                 request.getLimit(),
                 request.getOffset(),
                 request.getRadius(),
-                request.getSubject(),
-                null // metadata will be set in controller
+                request.getCategory(),
+                null
         );
     }
 
-    // Advanced search with all filters
     public LocationSearchResponse advancedSearchProviders(LocationSearchRequest request) {
         return searchProvidersNearbyByService(request);
     }
@@ -112,7 +98,72 @@ public class ProviderService {
                 .collect(Collectors.toList());
     }
 
-    // Helper method to map User to ProviderWithUser
+    private ProviderWithUser mapResultToProviderWithUser(Object[] result) {
+        User provider = extractUserFromResult(result);
+        Double distanceMiles = (Double) result[16]; // distance_miles is at index 16
+
+        ServiceCatalog providerService = serviceRepository.findByProviderUserId(provider.getUserId())
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        UserResponse userDTO = new UserResponse(
+                provider.getUserId(),
+                provider.getUsername(),
+                provider.getEmail(),
+                provider.getRole(),
+                provider.getProfilePicture(),
+                provider.getLocation(),
+                provider.getLatitude(),
+                provider.getLongitude(),
+                provider.getPhoneNumber(),
+                provider.getRating(),
+                provider.getReviewCount(),
+                distanceMiles,
+                provider.getLastLogin() != null ? provider.getLastLogin().toString() : null,
+                provider.getCreatedAt().toString(),
+                provider.getUpdatedAt().toString()
+        );
+
+        ServiceInfo serviceInfoDTO = null;
+        if (providerService != null) {
+            serviceInfoDTO = new ServiceInfo(
+                    providerService.getServiceId(),
+                    providerService.getName(),
+                    providerService.getDescription(),
+                    providerService.getCategory(),
+                    providerService.getAvailability(),
+                    providerService.getPrice(),
+                    providerService.getPricingType(),
+                    providerService.getLevel(),
+                    providerService.getSubject()
+            );
+        }
+
+        return new ProviderWithUser(provider.getUserId(), userDTO, serviceInfoDTO);
+    }
+
+    private User extractUserFromResult(Object[] result) {
+        User user = new User();
+        user.setUserId((Integer) result[0]);
+        user.setUsername((String) result[1]);
+        user.setEmail((String) result[2]);
+        user.setPasswordHash((String) result[3]);
+        user.setUsername((String) result[4]);
+        user.setPhoneNumber((String) result[5]);
+        user.setRole((String) result[6]);
+        user.setLocation((String) result[7]);
+        user.setLatitude((Double) result[8]);
+        user.setLongitude((Double) result[9]);
+        user.setRating((Double) result[10]);
+        user.setReviewCount((Integer) result[11]);
+        user.setLastLogin((java.sql.Timestamp) result[12]);
+        user.setCreatedAt((java.sql.Timestamp) result[13]);
+        user.setUpdatedAt((java.sql.Timestamp) result[14]);
+        user.setProfilePicture((String) result[15]);
+        return user;
+    }
+
     private ProviderWithUser mapToProviderWithUser(User provider) {
         ServiceCatalog providerService = serviceRepository.findByProviderUserId(provider.getUserId())
                 .stream()
@@ -131,7 +182,7 @@ public class ProviderService {
                 provider.getPhoneNumber(),
                 provider.getRating(),
                 provider.getReviewCount(),
-                provider.getDistanceMiles(),
+                null, // distance will be null for non-distance queries
                 provider.getLastLogin() != null ? provider.getLastLogin().toString() : null,
                 provider.getCreatedAt().toString(),
                 provider.getUpdatedAt().toString()

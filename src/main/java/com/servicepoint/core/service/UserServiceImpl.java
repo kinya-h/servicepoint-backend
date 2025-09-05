@@ -110,6 +110,22 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    public UserResponse updateProfile(UpdateProfileRequest request, int userId) {
+        var user = userRepository.findById(userId).
+                orElseThrow(()-> new ResourceNotFoundException("User not found"));
+
+        // update the records
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        user.setPhoneNumber(request.phoneNumber());
+
+        // TODO:: support updating other records instead of just the above 3 records
+
+        var upadtedUser =  userRepository.save(user);
+        return convertToDTO(upadtedUser);
+    }
+
+    @Override
     public UserResponse getUserById(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -209,7 +225,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userDTO.setPhoneNumber(user.getPhoneNumber());
         userDTO.setRating(user.getRating());
         userDTO.setReviewCount(user.getReviewCount());
-        userDTO.setDistanceMiles(user.getDistanceMiles());
         userDTO.setLastLogin(user.getLastLogin() != null ? user.getLastLogin().toString() : null);
         userDTO.setCreatedAt(user.getCreatedAt().toString());
         userDTO.setUpdatedAt(user.getUpdatedAt().toString());

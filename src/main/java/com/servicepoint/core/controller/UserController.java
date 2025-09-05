@@ -1,5 +1,6 @@
 package com.servicepoint.core.controller;
 
+import com.servicepoint.core.dto.UpdateProfileRequest;
 import com.servicepoint.core.dto.UserInfo;
 import com.servicepoint.core.dto.UserResponse;
 import com.servicepoint.core.model.User;
@@ -107,5 +108,14 @@ public class UserController {
             return ResponseEntity.internalServerError()
                     .body(new AuthController.ErrorResponse("User deletion failed", e.getMessage()));
         }
+    }
+
+    @PutMapping("/{userId}/profile")
+    public ResponseEntity<UserResponse>
+    updateUserProfile(@PathVariable Integer userId,
+                      @RequestBody UpdateProfileRequest request) {
+        var updatedProfile = userService.updateProfile(request, userId);
+        return ResponseEntity.ok(updatedProfile);
+
     }
 }

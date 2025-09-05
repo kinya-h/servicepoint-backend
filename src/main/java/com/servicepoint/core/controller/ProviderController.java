@@ -51,7 +51,7 @@ public class ProviderController {
     // GET method for simple searches (backward compatibility)
     @GetMapping("/nearby-service")
     public ResponseEntity<List<ProviderWithUser>> getProvidersNearbyByService(
-            @RequestParam String subject,
+            @RequestParam String category,
             @RequestParam Double latitude,
             @RequestParam Double longitude,
             @RequestParam(defaultValue = "10.0") Double radius,
@@ -59,8 +59,7 @@ public class ProviderController {
             @RequestParam(defaultValue = "0") Integer offset) {
 
         LocationSearchRequest request = new LocationSearchRequest(
-                subject, latitude, longitude, radius, limit, offset,
-                null, null, null, null, null, null
+                category, latitude, longitude, radius, limit, offset
         );
 
         List<ProviderWithUser> providers = providerService.getProvidersNearbyByService(request);

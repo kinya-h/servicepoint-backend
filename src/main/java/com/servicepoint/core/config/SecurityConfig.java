@@ -84,7 +84,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/services/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
                         .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
                         .requestMatchers("/api/feedback/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
-                        .requestMatchers("/api/provider/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
+                        .requestMatchers("/api/providers/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
 
                         // All other requests require authentication
                         .anyRequest().authenticated()
