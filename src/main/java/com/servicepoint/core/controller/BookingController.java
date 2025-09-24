@@ -83,7 +83,7 @@ public class BookingController {
     }
 
     @DeleteMapping("/{bookingId}")
-    public ResponseEntity<Void> deleteBooking(@PathVariable Integer bookingId) {
+    public ResponseEntity<Void> cancelBooking(@PathVariable Integer bookingId) {
         bookingService.deleteBooking(bookingId);
         return ResponseEntity.noContent().build();
     }

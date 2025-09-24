@@ -13,4 +13,6 @@ public interface FeedbackService {
 //    Feedback updateFeedback(Integer feedbackId, UpdateBookingRequest request);
 FeedbackResponse saveFeedback(FeedbackRequest feedback);
     void deleteFeedback(Integer feedbackId);
+    List<FeedbackResponse>  findFeedbackByCustomerId(Integer customerId);
+    List<FeedbackResponse>  findFeedbackByProviderId(Integer providerId);
 }

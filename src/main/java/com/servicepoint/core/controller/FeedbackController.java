@@ -20,11 +20,34 @@ public class FeedbackController {
     private FeedbackService feedbackService;
 
     /**
-     * Get all feedback
-     * @return List of all feedback responses
+     * Get all feedback OR filter by customer_id or provider_id using query parameters
+     * Examples:
+     * GET /api/feedback - returns all feedback
+     * GET /api/feedback?customer_id=123 - returns feedback for customer 123
+     * GET /api/feedback?provider_id=123 - returns feedback for provider 123
+     *
+     * @param customerId Optional customer ID filter
+     * @param providerId Optional provider ID filter
+     * @return List of feedback responses
      */
     @GetMapping
-    public ResponseEntity<List<FeedbackResponse>> getAllFeedback() {
+    public ResponseEntity<List<FeedbackResponse>> getFeedback(
+            @RequestParam(value = "customer_id", required = false) Integer customerId,
+            @RequestParam(value = "provider_id", required = false) Integer providerId) {
+
+        // If customer_id is provided, filter by customer
+        if (customerId != null) {
+            List<FeedbackResponse> customerFeedback = feedbackService.findFeedbackByCustomerId(customerId);
+            return ResponseEntity.ok(customerFeedback);
+        }
+
+        // If provider_id is provided, filter by provider
+        if (providerId != null) {
+            List<FeedbackResponse> providerFeedback = feedbackService.findFeedbackByProviderId(providerId);
+            return ResponseEntity.ok(providerFeedback);
+        }
+
+        // If no filters, return all feedback
         List<FeedbackResponse> feedbackList = feedbackService.fetchAllFeedback();
         return ResponseEntity.ok(feedbackList);
     }
@@ -63,45 +86,13 @@ public class FeedbackController {
     }
 
     /**
-     * Get feedback by customer ID
-     * @param customerId The customer ID to filter feedback by
-     * @return List of feedback for the specific customer
-     */
-    @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<FeedbackResponse>> getFeedbackByCustomer(@PathVariable Integer customerId) {
-        // TODO: add method to the service interface and implementation
-        // List<FeedbackResponse> customerFeedback = feedbackService.findFeedbackByCustomerId(customerId);
-        // return ResponseEntity.ok(customerFeedback);
-
-        // For now, returning all feedback
-        List<FeedbackResponse> feedbackList = feedbackService.fetchAllFeedback();
-        return ResponseEntity.ok(feedbackList);
-    }
-
-    /**
-     * Get feedback by provider ID
-     * @param providerId The provider ID to filter feedback by
-     * @return List of feedback for the specific provider
-     */
-    @GetMapping("/provider/{providerId}")
-    public ResponseEntity<List<FeedbackResponse>> getFeedbackByProvider(@PathVariable Integer providerId) {
-        // TODO: add a method to the service interface and implementation
-        // List<FeedbackResponse> providerFeedback = feedbackService.findFeedbackByProviderId(providerId);
-        // return ResponseEntity.ok(providerFeedback);
-
-        // For now, returning all feedback
-        List<FeedbackResponse> feedbackList = feedbackService.fetchAllFeedback();
-        return ResponseEntity.ok(feedbackList);
-    }
-
-    /**
      * Get feedback by booking ID
      * @param bookingId The booking ID to filter feedback by
      * @return List of feedback for the specific booking
      */
     @GetMapping("/booking/{bookingId}")
     public ResponseEntity<List<FeedbackResponse>> getFeedbackByBooking(@PathVariable Integer bookingId) {
-        //TODO:: add the service method and implementation to fetch feedback by booking
+        //TODO: add the service method and implementation to fetch feedback by booking
         // List<FeedbackResponse> bookingFeedback = feedbackService.findFeedbackByBookingId(bookingId);
         // return ResponseEntity.ok(bookingFeedback);
 

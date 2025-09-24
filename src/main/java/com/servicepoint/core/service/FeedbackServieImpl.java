@@ -125,6 +125,20 @@ public class FeedbackServieImpl implements FeedbackService{
     feedbackRepository.delete(feedback);
     }
 
+    @Override
+    public List<FeedbackResponse> findFeedbackByCustomerId(Integer customerId) {
+        var customer = userRepository.findById(customerId)
+                .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
+        return feedbackRepository.findByCustomerUserId(customer.getUserId());
+    }
+
+    @Override
+    public List<FeedbackResponse> findFeedbackByProviderId(Integer providerId) {
+        var provider = userRepository.findById(providerId)
+                .orElseThrow(()->new ResourceNotFoundException("Provider not found"));
+        return feedbackRepository.findByProviderUserId(provider.getUserId());
+    }
+
     private static List<FeedbackResponse> toFeedBackResponse(List<Feedback> allFeedback) {
         return allFeedback.stream().map(feedback -> new FeedbackResponse(
                 new SimpleBookingInfo(
