@@ -1,6 +1,6 @@
 package com.servicepoint.core.service;
 
-import com.servicepoint.core.controller.UpdateBookingRequest;
+import com.servicepoint.core.dto.UpdateBookingRequest;
 import com.servicepoint.core.dto.BookingRequest;
 import com.servicepoint.core.dto.BookingInfo;
 import com.servicepoint.core.dto.NewBookingResponse;

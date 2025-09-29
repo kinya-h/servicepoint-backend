@@ -1,4 +1,4 @@
-package com.servicepoint.core.controller;
+package com.servicepoint.core.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

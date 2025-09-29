@@ -1,6 +1,6 @@
 package com.servicepoint.core.service;
 
-import com.servicepoint.core.controller.UpdateBookingRequest;
+import com.servicepoint.core.dto.UpdateBookingRequest;
 import com.servicepoint.core.dto.*;
 import com.servicepoint.core.exception.ResourceNotFoundException;
 import com.servicepoint.core.model.Booking;
