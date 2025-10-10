@@ -58,11 +58,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
-        user.setLatitude(location.getLatitude());
-        user.setLongitude(location.getLongitude());
 
-        // Optionally store location
-        user.setLocation(location.getCity());
+        user.setLatitude(request.getLatitude());
+        user.setLongitude(request.getLongitude());
+
+//        user.setLatitude(location.getLatitude());
+//        user.setLongitude(location.getLongitude());
+//        // Optionally store location
+
+        user.setLocation(request.getLocation());
         user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
         user.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 

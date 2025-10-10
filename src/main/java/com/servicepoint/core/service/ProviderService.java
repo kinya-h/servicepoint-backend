@@ -33,11 +33,28 @@ public class ProviderService {
     }
 
     public List<ProviderWithUser> getProvidersNearbyByService(LocationSearchRequest request) {
+        // If no coordinates provided, fall back to general search
+        if (request.getLatitude() == null || request.getLongitude() == null) {
+            return getProvidersByServiceWithoutLocation(request);
+        }
+
         List<Object[]> results = userRepository.findProvidersNearbyByServiceWithFilters(
                 request.getCategory(),
                 request.getLatitude(),
                 request.getLongitude(),
                 request.getRadius(),
+                request.getLimit(),
+                request.getOffset()
+        );
+
+        return results.stream()
+                .map(this::mapResultToProviderWithUser)
+                .collect(Collectors.toList());
+    }
+
+    private List<ProviderWithUser> getProvidersByServiceWithoutLocation(LocationSearchRequest request) {
+        List<Object[]> results = userRepository.findProvidersByServiceWithoutDistance(
+                request.getCategory(),
                 request.getLimit(),
                 request.getOffset()
         );
@@ -102,6 +119,7 @@ public class ProviderService {
         User provider = extractUserFromResult(result);
         Double distanceMiles = (Double) result[16]; // distance_miles is at index 16
 
+        // Get the service for this provider
         ServiceCatalog providerService = serviceRepository.findByProviderUserId(provider.getUserId())
                 .stream()
                 .findFirst()
@@ -145,22 +163,24 @@ public class ProviderService {
 
     private User extractUserFromResult(Object[] result) {
         User user = new User();
-        user.setUserId((Integer) result[0]);
-        user.setUsername((String) result[1]);
-        user.setEmail((String) result[2]);
-        user.setPasswordHash((String) result[3]);
-        user.setUsername((String) result[4]);
-        user.setPhoneNumber((String) result[5]);
-        user.setRole((String) result[6]);
-        user.setLocation((String) result[7]);
-        user.setLatitude((Double) result[8]);
-        user.setLongitude((Double) result[9]);
-        user.setRating((Double) result[10]);
-        user.setReviewCount((Integer) result[11]);
-        user.setLastLogin((java.sql.Timestamp) result[12]);
-        user.setCreatedAt((java.sql.Timestamp) result[13]);
-        user.setUpdatedAt((java.sql.Timestamp) result[14]);
-        user.setProfilePicture((String) result[15]);
+
+        // Proper casting based on SQL result order
+        user.setUserId(((Number) result[0]).intValue()); // user_id
+        user.setEmail((String) result[1]); // email
+        user.setPasswordHash((String) result[2]); // password_hash
+        user.setUsername((String) result[3]); // username
+        user.setPhoneNumber((String) result[4]); // phone_number
+        user.setRole((String) result[5]); // role
+        user.setLocation((String) result[6]); // location
+        user.setLatitude(result[7] != null ? ((Number) result[7]).doubleValue() : null); // latitude
+        user.setLongitude(result[8] != null ? ((Number) result[8]).doubleValue() : null); // longitude
+        user.setRating(result[9] != null ? ((Number) result[9]).doubleValue() : null); // rating
+        user.setReviewCount(result[10] != null ? ((Number) result[10]).intValue() : null); // review_count
+        user.setLastLogin((java.sql.Timestamp) result[11]); // last_login
+        user.setCreatedAt((java.sql.Timestamp) result[12]); // created_at
+        user.setUpdatedAt((java.sql.Timestamp) result[13]); // updated_at
+        user.setProfilePicture((String) result[14]); // profile_picture
+
         return user;
     }
 

@@ -14,7 +14,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query(value = """
         SELECT 
-            u.user_id, u.username, u.email, u.password_hash, u.username, u.phone_number, 
+            u.user_id, u.email, u.password_hash, u.username, u.phone_number, 
             u.role, u.location, u.latitude, u.longitude, u.rating, u.review_count, 
             u.last_login, u.created_at, u.updated_at, u.profile_picture,
             ST_Distance(
@@ -33,7 +33,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             :radius * 1609.34
         )
         AND (:category IS NULL OR LOWER(sc.category) = LOWER(:category))
-        GROUP BY u.user_id, u.latitude, u.longitude
+        GROUP BY u.user_id, u.username, u.email, u.password_hash, u.phone_number, u.role, 
+                 u.location, u.latitude, u.longitude, u.rating, u.review_count, 
+                 u.last_login, u.created_at, u.updated_at, u.profile_picture
         ORDER BY distance_miles ASC, u.rating DESC NULLS LAST, min_price ASC
         LIMIT :limit OFFSET :offset
         """, nativeQuery = true)
@@ -67,13 +69,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             @Param("radius") Double radius
     );
 
-    // Backup method for debugging without distance filtering
     @Query(value = """
         SELECT 
-            u.user_id, u.username, u.email, u.password_hash, u.username, u.phone_number, 
+            u.user_id, u.email, u.password_hash, u.username, u.phone_number, 
             u.role, u.location, u.latitude, u.longitude, u.rating, u.review_count, 
             u.last_login, u.created_at, u.updated_at, u.profile_picture,
-            999.0 as distance_miles,
+            NULL as distance_miles,
             MIN(sc.price) as min_price
         FROM users u 
         JOIN services sc ON u.user_id = sc.provider_id 
