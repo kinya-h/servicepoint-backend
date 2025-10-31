@@ -1,9 +1,6 @@
 package com.servicepoint.core.controller;
 
-import com.servicepoint.core.dto.LoginRequest;
-import com.servicepoint.core.dto.LoginResponse;
-import com.servicepoint.core.dto.RegisterRequest;
-import com.servicepoint.core.dto.UserResponse;
+import com.servicepoint.core.dto.*;
 import com.servicepoint.core.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -11,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 @RequestMapping("/api/auth")
@@ -21,10 +17,32 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    /**
+     * Step 1: Request OTP for registration
+     * POST /api/auth/register/request-otp
+     */
+    @PostMapping("/register/request-otp")
+    public ResponseEntity<?> requestRegistrationOtp(@Valid @RequestBody SendOtpRequest request) {
+        try {
+            SendOtpResponse response = userService.initiateRegistration(request.getEmail());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse("OTP request failed", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("OTP request failed", "An unexpected error occurred"));
+        }
+    }
+
+    /**
+     * Step 2: Complete registration with OTP
+     * POST /api/auth/register
+     */
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest user, HttpServletRequest request) {
         try {
-            UserResponse userDTO = userService.createUser( user, request);
+            UserResponse userDTO = userService.createUser(user, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
@@ -35,6 +53,29 @@ public class AuthController {
         }
     }
 
+    /**
+     * Step 1: Request OTP for login
+     * POST /api/auth/login/request-otp
+     */
+    @PostMapping("/login/request-otp")
+    public ResponseEntity<?> requestLoginOtp(@Valid @RequestBody SendOtpRequest request) {
+        try {
+            // request.email() here should contain username (did that so that it will e compatible with registration payload)
+            SendOtpResponse response = userService.initiateLogin(request.getEmail());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse("OTP request failed", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("OTP request failed", "An unexpected error occurred"));
+        }
+    }
+
+    /**
+     * Step 2: Complete login with credentials and OTP
+     * POST /api/auth/login
+     */
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest request,
                                        HttpServletRequest httpRequest) {

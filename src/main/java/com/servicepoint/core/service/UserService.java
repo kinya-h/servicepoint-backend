@@ -8,14 +8,27 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    UserResponse createUser(RegisterRequest request ,   HttpServletRequest httpRequest) throws Exception;
+    SendOtpResponse initiateRegistration(String email) throws Exception;
+    SendOtpResponse initiateLogin(String username) throws Exception;
+
+    UserResponse createUser(RegisterRequest request, HttpServletRequest httpRequest) throws Exception;
     LoginResponse loginUser(LoginRequest request, HttpServletRequest httpRequest);
-    UserResponse updateProfile(UpdateProfileRequest request, int  userId);
+
+    // Profile management
+    UserResponse updateProfile(UpdateProfileRequest request, int userId);
     UserResponse getUserById(Integer userId);
+
+    // User CRUD operations
     List<User> findAllUsers();
     Optional<User> findUserById(Integer userId);
     Optional<User> findUserByUsername(String username);
     Optional<User> findUserByEmail(String email);
     User saveUser(User user);
     void deleteUser(Integer userId);
+
+
+
 }
+
+
+

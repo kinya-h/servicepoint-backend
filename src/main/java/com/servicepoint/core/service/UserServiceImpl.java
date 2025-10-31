@@ -7,7 +7,6 @@ import com.servicepoint.core.model.User;
 import com.servicepoint.core.repository.SessionRepository;
 import com.servicepoint.core.repository.UserRepository;
 import com.servicepoint.core.security.JwtUtil;
-import com.servicepoint.core.util.GeoLocationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,8 +36,40 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private OtpService otpService;
+
+    /**
+     * Step 1: Initiate registration by sending OTP
+     */
+    public SendOtpResponse initiateRegistration(String email) throws Exception {
+        // Check if email already exists
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("User with this email already exists");
+        }
+
+        // Check rate limiting
+        if (!otpService.canResendOtp(email, "registration")) {
+            throw new RuntimeException("Please wait before requesting a new OTP");
+        }
+
+        // Generate and send OTP
+        otpService.generateAndSendOtp(email, "registration");
+
+        return new SendOtpResponse(true, "OTP sent to your email", 600L); // 10 minutes
+    }
+
+    /**
+     * Step 2: Complete registration with OTP verification
+     */
     @Override
     public UserResponse createUser(RegisterRequest request, HttpServletRequest httpRequest) throws Exception {
+        // Verify OTP first
+        boolean otpValid = otpService.verifyOtp(request.getEmail(), request.getOtpCode(), "registration");
+        if (!otpValid) {
+            throw new RuntimeException("Invalid or expired OTP code");
+        }
+
         // Check if user already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("User with this email already exists");
@@ -47,41 +78,57 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             throw new RuntimeException("User with this username already exists");
         }
 
-        // Get client IP
-        String clientIp = getClientIpAddress(httpRequest);
-
-        // Fetch location
-        GeoLocationUtil.LocationResult location = GeoLocationUtil.getLocationFromIp(clientIp);
-
+        // Create user
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
-
         user.setLatitude(request.getLatitude());
         user.setLongitude(request.getLongitude());
-
-//        user.setLatitude(location.getLatitude());
-//        user.setLongitude(location.getLongitude());
-//        // Optionally store location
-
         user.setLocation(request.getLocation());
         user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
         user.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
-
     }
 
+    /**
+     * Step 1: Initiate login by sending OTP
+     */
+    public SendOtpResponse initiateLogin(String username) throws Exception {
+        User user = findUserByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check rate limiting
+        if (!otpService.canResendOtp(user.getEmail(), "login")) {
+            throw new RuntimeException("Please wait before requesting a new OTP");
+        }
+
+        // Generate and send OTP
+        otpService.generateAndSendOtp(user.getEmail(), "login");
+
+        return new SendOtpResponse(true, "OTP sent to your registered email", 600L);
+    }
+
+    /**
+     * Step 2: Complete login with password and OTP verification
+     */
     @Override
     public LoginResponse loginUser(LoginRequest request, HttpServletRequest httpRequest) {
         User user = findUserByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Verify password
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Invalid credentials");
+        }
+
+        // Verify OTP
+        boolean otpValid = otpService.verifyOtp(user.getEmail(), request.getOtpCode(), "login");
+        if (!otpValid) {
+            throw new RuntimeException("Invalid or expired OTP code");
         }
 
         // Update last login
@@ -101,32 +148,27 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 httpRequest.getHeader("User-Agent") : "Unknown");
         session.setClientIp(getClientIpAddress(httpRequest));
         session.setIsBlocked(false);
-        // Set refresh token expiration (7 days from now)
         session.setExpiresAt(Timestamp.valueOf(LocalDateTime.now().plusDays(7)));
         session.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
-        // Save session first
         sessionRepository.save(session);
 
-        // Return login response with tokens
-        return new LoginResponse(accessToken, refreshToken, 900000L, 604800000L ,
-                new UserInfo(user.getUserId(),user.getUsername(), user.getEmail(), user.getRole(), user.getPhoneNumber(), user.getProfilePicture())); // 15m, 7d
+        return new LoginResponse(accessToken, refreshToken, 900000L, 604800000L,
+                new UserInfo(user.getUserId(), user.getUsername(), user.getEmail(),
+                        user.getRole(), user.getPhoneNumber(), user.getProfilePicture()));
     }
 
     @Override
     public UserResponse updateProfile(UpdateProfileRequest request, int userId) {
-        var user = userRepository.findById(userId).
-                orElseThrow(()-> new ResourceNotFoundException("User not found"));
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // update the records
         user.setUsername(request.username());
         user.setEmail(request.email());
         user.setPhoneNumber(request.phoneNumber());
 
-        // TODO:: support updating other records instead of just the above 3 records
-
-        var upadtedUser =  userRepository.save(user);
-        return convertToDTO(upadtedUser);
+        var updatedUser = userRepository.save(user);
+        return convertToDTO(updatedUser);
     }
 
     @Override
@@ -164,7 +206,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPasswordHash())
-                .roles(user.getRole().toUpperCase()) // "provider" → "PROVIDER" → ROLE_PROVIDER
+                .roles(user.getRole().toUpperCase())
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)
@@ -175,10 +217,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User saveUser(User user) {
         if (user.getPasswordHash() != null && !user.getPasswordHash().startsWith("$2a$")) {
-            // Only encode if it's not already encoded
             user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         }
-        if (user.getUserId() == null) { // New user
+        if (user.getUserId() == null) {
             user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
         }
         user.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
@@ -193,24 +234,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userRepository.deleteById(userId);
     }
 
-    /**
-     * Get client IP address from HTTP request
-     */
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedForHeader = request.getHeader("X-Forwarded-For");
         if (xForwardedForHeader != null && !xForwardedForHeader.isEmpty()) {
-            // X-Forwarded-For can contain multiple IPs, get the first one
             return xForwardedForHeader.split(",")[0].trim();
         }
 
         String xRealIpHeader = request.getHeader("X-Real-IP");
         if (xRealIpHeader != null && !xRealIpHeader.isEmpty()) {
             return xRealIpHeader;
-        }
-
-        String xForwardedProtoHeader = request.getHeader("X-Forwarded-Proto");
-        if (xForwardedProtoHeader != null && !xForwardedProtoHeader.isEmpty()) {
-            return request.getRemoteAddr();
         }
 
         return request.getRemoteAddr();
@@ -234,6 +266,4 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userDTO.setUpdatedAt(user.getUpdatedAt().toString());
         return userDTO;
     }
-
-
 }

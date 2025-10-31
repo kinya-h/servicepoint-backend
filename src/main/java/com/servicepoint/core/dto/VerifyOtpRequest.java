@@ -11,17 +11,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+public class VerifyOtpRequest {
 
-public class LoginRequest {
+    @NotBlank(message = "Email is required")
+    private String email;
 
-    @NotBlank(message = "Username is required")
-    private String username;
-
-    @NotBlank(message = "Password is required")
-    private String password;
-
-    // NEW: OTP code for login verification
     @NotBlank(message = "OTP code is required")
     @Pattern(regexp = "\\d{6}", message = "OTP must be a 6-digit number")
     private String otpCode;
+
+    @NotBlank(message = "Purpose is required")
+    private String purpose;
 }
