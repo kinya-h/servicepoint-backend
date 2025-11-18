@@ -97,8 +97,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     /**
      * Step 1: Initiate login by sending OTP
      */
-    public SendOtpResponse initiateLogin(String username) throws Exception {
-        User user = findUserByUsername(username)
+    public SendOtpResponse initiateLogin(String email) throws Exception {
+        User user = findUserByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Check rate limiting
@@ -117,17 +117,26 @@ public class UserServiceImpl implements UserService, UserDetailsService {
      */
     @Override
     public LoginResponse loginUser(LoginRequest request, HttpServletRequest httpRequest) {
-        User user = findUserByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        System.out.println("DEBUG >> Login attempt for email: " + request.getEmail());
+
+        User user = findUserByEmail(request.getEmail())
+                .orElseThrow(() -> {
+                    System.out.println("DEBUG >> User not found for email: " + request.getEmail());
+                    return new RuntimeException("User not found");
+                });
+
+        System.out.println("DEBUG >> Found user in DB: " + user.getUsername() + " with role: " + user.getRole());
 
         // Verify password
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            System.out.println("DEBUG >> Password verification failed");
             throw new RuntimeException("Invalid credentials");
         }
 
         // Verify OTP
         boolean otpValid = otpService.verifyOtp(user.getEmail(), request.getOtpCode(), "login");
         if (!otpValid) {
+            System.out.println("DEBUG >> OTP verification failed for code: " + request.getOtpCode());
             throw new RuntimeException("Invalid or expired OTP code");
         }
 
@@ -135,9 +144,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setLastLogin(Timestamp.valueOf(LocalDateTime.now()));
         userRepository.save(user);
 
-        // Generate tokens
-        String accessToken = jwtUtil.generateToken(user.getUsername());
+
+        System.out.println("DEBUG >> Calling loadUserByUsername with email: " + request.getEmail());
+        UserDetails userDetails = loadUserByUsername(request.getEmail()); // Use the email
+
+        System.out.println("DEBUG >> UserDetails loaded: " + userDetails.getUsername() + " with authorities: " + userDetails.getAuthorities());
+
+        // Generate tokens with UserDetails to include roles
+        String accessToken = jwtUtil.generateToken(userDetails);
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+
+        System.out.println("DEBUG >> Generated access token for: " + userDetails.getUsername());
 
         // Create and save session
         Session session = new Session();
@@ -152,6 +169,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         session.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         sessionRepository.save(session);
+
+        System.out.println("DEBUG >> Login successful for user: " + user.getUsername());
 
         return new LoginResponse(accessToken, refreshToken, 900000L, 604800000L,
                 new UserInfo(user.getUserId(), user.getUsername(), user.getEmail(),
@@ -199,14 +218,34 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username/email: " + username));
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        System.out.println("DEBUG >> loadUserByUsername called with: " + usernameOrEmail);
+
+        // Try to find by email first (support both username and email)
+        Optional<User> userOptional = userRepository.findByEmail(usernameOrEmail);
+
+        // If not found by email, try by username
+        if (userOptional.isEmpty()) {
+            userOptional = userRepository.findByUsername(usernameOrEmail);
+        }
+
+        User user = userOptional
+                .orElseThrow(() -> {
+                    System.out.println("DEBUG >> User not found with username/email: " + usernameOrEmail);
+                    return new UsernameNotFoundException("User not found with username/email: " + usernameOrEmail);
+                });
+
+        System.out.println("DEBUG >> Found user: " + user.getUsername() + " with email: " + user.getEmail() + " and role: " + user.getRole());
+
+        // Use .authorities() for explicit control
+        String roleWithPrefix = "ROLE_" + user.getRole().toUpperCase();
+
+        System.out.println("DEBUG >> Final authority for Spring Security: " + roleWithPrefix);
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPasswordHash())
-                .roles(user.getRole().toUpperCase())
+                .authorities(roleWithPrefix)
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)

@@ -75,16 +75,33 @@ public class SecurityConfig {
                         .requestMatchers("/health", "/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        // Admin endpoints - require ADMIN role
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/users/all").hasRole("ADMIN")
+                        // Provider Registration - public submission, admin-only management
+                        .requestMatchers("/api/provider-registration/request-otp").permitAll()
+                        .requestMatchers("/api/provider-registration/submit").permitAll()
 
-                        // User endpoints - require PROVIDER or ADMIN role
-                        .requestMatchers("/api/users/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
-                        .requestMatchers("/api/services/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
-                        .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
-                        .requestMatchers("/api/feedback/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
-                        .requestMatchers("/api/providers/**").hasAnyRole("USER", "ADMIN", "PROVIDER", "CUSTOMER")
+                        // Provider Registration Admin endpoints - require ADMIN role
+                        .requestMatchers("/api/provider-registration/all").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/provider-registration/pending").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/provider-registration/approved").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/provider-registration/rejected").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/provider-registration/approve/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/provider-registration/reject/**").hasAuthority("ROLE_ADMIN")
+
+                        // Provider Auth - public status check, authenticated login
+                        .requestMatchers("/api/provider-auth/status").permitAll()
+                        .requestMatchers("/api/provider-auth/login").permitAll()
+
+                        // Admin endpoints - require ADMIN role
+                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/users/all").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/uploads/provider-documents/**").hasAuthority("ROLE_ADMIN")
+
+                        // User endpoints - require authenticated users
+                        .requestMatchers("/api/users/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN", "ROLE_PROVIDER", "ROLE_CUSTOMER")
+                        .requestMatchers("/api/services/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN", "ROLE_PROVIDER", "ROLE_CUSTOMER")
+                        .requestMatchers("/api/bookings/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN", "ROLE_PROVIDER", "ROLE_CUSTOMER")
+                        .requestMatchers("/api/feedback/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN", "ROLE_PROVIDER", "ROLE_CUSTOMER")
+                        .requestMatchers("/api/providers/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN", "ROLE_PROVIDER", "ROLE_CUSTOMER")
 
                         // All other requests require authentication
                         .anyRequest().authenticated()

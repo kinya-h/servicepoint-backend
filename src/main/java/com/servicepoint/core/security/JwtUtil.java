@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import java.security.Key;
@@ -11,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
@@ -53,9 +55,18 @@ public class JwtUtil {
         return createToken(claims, username);
     }
 
-    // Generate token with UserDetails
+    // Generate token with UserDetails - FIXED VERSION
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+
+        // Add roles to claims
+        String roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        claims.put("roles", roles);
+        claims.put("authorities", userDetails.getAuthorities());
+
         return createToken(claims, userDetails.getUsername());
     }
 
@@ -93,5 +104,9 @@ public class JwtUtil {
     public Boolean validateToken(String token, String email) {
         final String tokenEmail = extractUsername(token);
         return (tokenEmail.equals(email) && !isTokenExpired(token));
+    }
+
+    public String extractRoles(String token) {
+        return extractClaim(token, claims -> claims.get("roles", String.class));
     }
 }

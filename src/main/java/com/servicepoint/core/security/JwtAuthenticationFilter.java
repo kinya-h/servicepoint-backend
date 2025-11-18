@@ -6,21 +6,24 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Setter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Setter
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    // Setter methods for dependency injection
     private JwtUtil jwtUtil;
     private UserDetailsService userDetailsService;
 
-    // Constructor injection to avoid circular dependency
     public JwtAuthenticationFilter() {
         // Default constructor
     }
@@ -31,7 +34,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        // Get dependencies from application context if not injected
         if (jwtUtil == null || userDetailsService == null) {
             initializeDependencies();
         }
@@ -46,7 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {
-                // Invalid token, continue with filter chain
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -57,22 +58,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 if (jwtUtil.validateToken(jwt, userDetails)) {
+                    // Extract roles from token or fallback to userDetails
+                    Collection<? extends GrantedAuthority> authorities = extractAuthoritiesFromToken(jwt, userDetails);
+
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
+                                    userDetails, null, authorities);
 
                     System.out.println("DEBUG >> Authenticated user: " + username +
-                            " with authorities: " + userDetails.getAuthorities());
+                            " with authorities: " + authorities);
 
                     authenticationToken.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             } catch (Exception e) {
-                // User not found or other error, continue without authentication
+                System.err.println("JWT Filter Error: " + e.getMessage());
+                e.printStackTrace();
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private Collection<? extends GrantedAuthority> extractAuthoritiesFromToken(String token, UserDetails userDetails) {
+        try {
+            String roles = jwtUtil.extractRoles(token);
+            if (roles != null && !roles.isEmpty()) {
+                return Arrays.stream(roles.split(","))
+                        .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to extract roles from token, using userDetails authorities");
+        }
+
+        // Fallback to userDetails authorities
+        return userDetails.getAuthorities();
     }
 
     private void initializeDependencies() {

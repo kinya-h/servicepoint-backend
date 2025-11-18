@@ -60,7 +60,6 @@ public class AuthController {
     @PostMapping("/login/request-otp")
     public ResponseEntity<?> requestLoginOtp(@Valid @RequestBody SendOtpRequest request) {
         try {
-            // request.email() here should contain username (did that so that it will e compatible with registration payload)
             SendOtpResponse response = userService.initiateLogin(request.getEmail());
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
