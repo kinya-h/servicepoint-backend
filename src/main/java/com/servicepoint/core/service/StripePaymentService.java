@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
@@ -41,8 +42,13 @@ public class StripePaymentService {
      * Create Stripe Checkout Session for booking payment
      */
     public Session createCheckoutSession(Booking booking, ServiceCatalog service) throws StripeException {
+            // TODO: Review the amount
         // Calculate amount in cents
-        long amountInCents = (long) (booking.getTotalPrice() * 100);
+        long amountInCents = BigDecimal
+                .valueOf(booking.getTotalPrice())
+                .multiply(BigDecimal.valueOf(100))
+                .longValue();
+
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
@@ -106,6 +112,37 @@ public class StripePaymentService {
         booking.setPaidAt(Timestamp.valueOf(LocalDateTime.now()));
 
         bookingRepository.save(booking);
+    }
+
+
+    /**
+     * Handle expired checkout session from Stripe webhook
+     */
+    @Transactional
+    public void handleSessionExpired(String sessionId) throws StripeException {
+        Session session = Session.retrieve(sessionId);
+
+        String bookingIdStr = session.getMetadata().get("booking_id");
+        if (bookingIdStr == null) {
+            System.err.println("Booking ID not found in expired session metadata");
+            return;
+        }
+
+        Integer bookingId = Integer.parseInt(bookingIdStr);
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        // Only update if payment hasn't been completed
+        if (!"completed".equals(booking.getPaymentStatus())) {
+            booking.setPaymentStatus("expired");
+            // You might want to cancel the booking or keep it as pending
+            // booking.setStatus("cancelled"); // Optional: cancel the booking
+            bookingRepository.save(booking);
+
+            System.out.println("Checkout session expired for booking: " + bookingId);
+        } else {
+            System.out.println("Booking already paid, ignoring expired session: " + bookingId);
+        }
     }
 
     /**

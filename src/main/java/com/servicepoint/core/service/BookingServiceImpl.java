@@ -130,6 +130,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setService(service);
         booking.setBookingDate(request.getBookingDate());
         booking.setPriceAtBooking(request.getPriceAtBooking());
+        booking.setTotalPrice(request.getTotalPrice());
         booking.setPricingTypeAtBooking(request.getPricingTypeAtBooking());
         booking.setStatus(request.getStatus());
         booking.setServiceDateTime(request.getServiceDateTime());

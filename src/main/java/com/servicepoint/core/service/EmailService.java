@@ -78,7 +78,7 @@ public class EmailService {
                         </p>
                     </div>
                     <div style="background-color: #333; color: white; padding: 15px; text-align: center;">
-                        <p style="margin: 0;">© 2024 ServicePoint. All rights reserved.</p>
+                        <p style="margin: 0;">© 2025 ServicePoint. All rights reserved.</p>
                     </div>
                 </body>
                 </html>
@@ -121,7 +121,7 @@ public class EmailService {
                         </p>
                     </div>
                     <div style="background-color: #333; color: white; padding: 15px; text-align: center;">
-                        <p style="margin: 0;">© 2024 ServicePoint. All rights reserved.</p>
+                        <p style="margin: 0;">© 2025 ServicePoint. All rights reserved.</p>
                     </div>
                 </body>
                 </html>
@@ -176,7 +176,7 @@ public class EmailService {
                         </p>
                     </div>
                     <div style="background-color: #333; color: white; padding: 15px; text-align: center;">
-                        <p style="margin: 0;">© 2024 ServicePoint. All rights reserved.</p>
+                        <p style="margin: 0;">© 2025 ServicePoint. All rights reserved.</p>
                     </div>
                 </body>
                 </html>
@@ -228,7 +228,7 @@ public class EmailService {
                         </p>
                     </div>
                     <div style="background-color: #333; color: white; padding: 15px; text-align: center;">
-                        <p style="margin: 0; font-size: 12px;">© 2024 ServicePoint. All rights reserved.</p>
+                        <p style="margin: 0; font-size: 12px;">© 2025 ServicePoint. All rights reserved.</p>
                     </div>
                 </body>
                 </html>

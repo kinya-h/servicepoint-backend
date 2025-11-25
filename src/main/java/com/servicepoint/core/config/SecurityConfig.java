@@ -90,6 +90,7 @@ public class SecurityConfig {
                         // Provider Auth - public status check, authenticated login
                         .requestMatchers("/api/provider-auth/status").permitAll()
                         .requestMatchers("/api/provider-auth/login").permitAll()
+                        .requestMatchers("/api/payments/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN", "ROLE_PROVIDER", "ROLE_CUSTOMER")
 
                         // Admin endpoints - require ADMIN role
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")

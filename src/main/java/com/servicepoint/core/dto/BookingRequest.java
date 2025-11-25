@@ -21,5 +21,6 @@ public class BookingRequest {
     private String status;
     private String notes;
     private Double priceAtBooking;
+    private Double totalPrice;
     private String pricingTypeAtBooking;
 }
